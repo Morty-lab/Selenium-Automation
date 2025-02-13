@@ -1,0 +1,42 @@
+main.py::FacebookScraper::test_facebook_scraper
+--------------------------------------------------------------------
+Last Page: https://www.facebook.com/100069117444971/posts/715734960740412/?rdid=DQlQBWlZRnBKYvwp#
+ Duration: 48.24s
+  Browser: Chrome 132.0.6834.160
+   Driver: chromedriver 132.0.6834.159
+Timestamp: 1739424488  (Unix Timestamp)
+     Date: Thursday, 13 February 2025
+     Time: 1:28:08 PM  (Malay Peninsula Standard Time, UTC+08:00)
+--------------------------------------------------------------------
+Traceback:
+  File "C:\Users\Anie Joseph Cabahug\work_stuff\SeleniumAutomation\main.py", line 160, in test_facebook_scraper
+    self.open_facebook_links(urls)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Anie Joseph Cabahug\work_stuff\SeleniumAutomation\main.py", line 14, in open_facebook_links
+    self.extract_comments(url)  # Scrape comments
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Anie Joseph Cabahug\work_stuff\SeleniumAutomation\main.py", line 99, in extract_comments
+    self.expand_comments()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Anie Joseph Cabahug\work_stuff\SeleniumAutomation\main.py", line 55, in expand_comments
+    comments_div = self.find_element("div.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.x1pi30zi.x1swvt13")
+  File "c:\Users\Anie Joseph Cabahug\AppData\Local\Programs\Python\Python313\Lib\site-packages\seleniumbase\fixtures\base_case.py", line 9647, in find_element
+    return self.wait_for_element_visible(selector, by=by, timeout=timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Anie Joseph Cabahug\AppData\Local\Programs\Python\Python313\Lib\site-packages\seleniumbase\fixtures\base_case.py", line 9075, in wait_for_element_visible
+    return page_actions.wait_for_element_visible(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.driver,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        original_selector=original_selector,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\Users\Anie Joseph Cabahug\AppData\Local\Programs\Python\Python313\Lib\site-packages\seleniumbase\fixtures\page_actions.py", line 514, in wait_for_element_visible
+    timeout_exception(NoSuchElementException, message)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Anie Joseph Cabahug\AppData\Local\Programs\Python\Python313\Lib\site-packages\seleniumbase\fixtures\page_actions.py", line 267, in timeout_exception
+    raise exc(msg)
+Exception: Message: 
+ Element {div.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.x1pi30zi.x1swvt13} was not present after 10 seconds!
