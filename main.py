@@ -24,9 +24,9 @@ class FacebookScraper(BaseCase):
                 self.click("[aria-label='Close'][role='button']")
                 self.sleep(1)
 
-        except Exception as e:
+        except:
             # Ignore popups that were not closed
-            print(f"No popups found or could not close them: {e}")
+            pass
 
     def change_visibility_to_all(self):
         """Clicks the button to change comment visibility to 'All Comments' including potential spam."""
@@ -99,7 +99,7 @@ class FacebookScraper(BaseCase):
         self.expand_comments()
         
         # Locate all comments
-        comment_elements = self.find_elements("div[aria-label='Comment']")
+        comment_elements = self.find_elements("div[aria-label^='Comment by ']")
         
         # Check if the comment count matches the comments found
         if len(comment_elements) != comment_count:
@@ -107,18 +107,18 @@ class FacebookScraper(BaseCase):
         
         for comment in comment_elements:
             try:
-                name = comment.find_element("xpath", ".//strong").text
-                comment_text = comment.find_element("xpath", ".//span").text
-                time_ago = comment.find_element("xpath", ".//abbr").text  # Example: "5m", "2h", "1d"
-                comment_url = comment.find_element("xpath", ".//a").get_attribute("href")
+                aria_label = comment.get_attribute("aria-label")
+                name = aria_label.split("Comment by ")[1].split(" ")[0]
+                how_long = aria_label.split("Comment by ")[1].split(" ", 1)[1]
+                comment_text = comment.find_element("xpath", ".//div/div/div/div/span").get_attribute("innerText")
 
                 comments_data.append({
                     "date": datetime.date.today().isoformat(),
                     "name": name,
                     "company": "",  # Leave empty for now
                     "comment": comment_text,
-                    "how_long": time_ago,
-                    "url": comment_url
+                    "how_long": how_long,
+                    "url": ""  # Leave empty for now
                 })
 
             except Exception as e:
