@@ -1,45 +1,63 @@
-class Video:
-    def __init__(self, video_id, title, description, views, likes, dislikes):
-        self.video_id = video_id
-        self.title = title
-        self.description = description
-        self.views = views
-        self.likes = likes
-        self.dislikes = dislikes
+import json
+import datetime
+from seleniumbase import BaseCase
 
-    def get_video_id(self):
-        return self.video_id
+class VideoTest(BaseCase):
+    def expand_comments(self):
+        """Clicks 'View more' to expand comments section until all comments are loaded"""
+        view_more_button_visible = self.is_element_visible('span:contains("View more")')
+        if view_more_button_visible:
+            self.click('span:contains("View more")')
+            self.sleep(1)
+            self.execute_script("window.scrollTo(0, 0);")  # Scroll to top after expanding
+            comments_div = self.find_element("div.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.x1pi30zi.x1swvt13")
+            self.execute_script("arguments[0].scrollIntoView(true);", comments_div)
 
-    def get_title(self):
-        return self.title
+        # If the view more button is not visible, scroll through the div to load all comments
+        comments_div = self.find_element("div.x78zum5.xdt5ytf.x6ikm8r.x1odjw0f.x1iyjqo2.x1pi30zi.x1swvt13")
+        for _ in range(20):
+            self.execute_script("arguments[0].scrollBy(0, arguments[0].scrollHeight);", comments_div)
+            self.sleep(0.5)  # Allow time for new comments to load
 
-    def get_description(self):
-        return self.description
+    def get_comment_count(self):
+        """Returns the number of comments on a post."""
+        try:
+            comment_count_text = self.get_text("span:contains(' comment')")
+            if 'comments' in comment_count_text:
+                comment_count = int(comment_count_text.split()[0])
+            elif 'comment' in comment_count_text:
+                comment_count = 1
+            else:
+                comment_count = 0
+        except Exception as e:
+            print(f"Failed to find comment count: {e}")
+            comment_count = 0
+        return comment_count
 
-    def get_views(self):
-        return self.views
+    def close_facebook_popups(self):
+        """Closes Facebook login pop-ups and cookie banners without closing post pop-ups."""
+        try:
+            # Check if the login modal is present
+            text_present = self.assert_text("See more on Facebook", "div[role='dialog']")
 
-    def get_likes(self):
-        return self.likes
+            # Close login modal if present
+            if text_present and self.is_element_visible("[aria-label='Close'][role='button']"):
+                self.click("[aria-label='Close'][role='button']")
+                self.sleep(1)
 
-    def get_dislikes(self):
-        return self.dislikes
+        except:
+            # Ignore popups that were not closed
+            pass
+        
+    def change_visibility_to_all(self):
+        """Clicks the button to change comment visibility to 'All Comments' including potential spam."""
+        try:
+            # Click the button to expand comment options
+            self.click('span:contains("Most relevant")')
+            self.sleep(1)  # Allow dropdown to appear
 
-    def set_video_id(self, video_id):
-        self.video_id = video_id
-
-    def set_title(self, title):
-        self.title = title
-
-    def set_description(self, description):
-        self.description = description
-
-    def set_views(self, views):
-        self.views = views
-
-    def set_likes(self, likes):
-        self.likes = likes
-
-    def set_dislikes(self, dislikes):
-        self.dislikes = dislikes
-
+            # Click 'All Comments' option
+            self.click('div[role="menuitem"]:contains("Show all comments, including potential spam.")')
+            self.sleep(3)  # Ensure the change is registered
+        except Exception as e:
+            print(f"Unable to change comment visibility: {e}")
