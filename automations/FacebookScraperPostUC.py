@@ -8,23 +8,25 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import date
 
 
-class FacebookScraperUC:
+class FacebookScrapePostUC:
     def __init__(self):
-        self.driver = uc.Chrome(headless=False)  # Set to True if you want it headless
+        self.driver = uc.Chrome(headless=True)  # Set to True if you want it headless
         self.wait = WebDriverWait(self.driver, 10)
 
     def test_facebook_scraper(self):
-        self.driver.maximize_window()
-        video_urls = self.get_urls_from_json("video.json")
-
-        self.open_facebook_video_links(video_urls)
+        try:
+            self.driver.maximize_window()
+            post_urls = self.get_urls_from_json("post.json")
+            self.open_facebook_post_links(post_urls)
+        finally:
+            self.quit()
 
     def get_urls_from_json(self, filename):
         with open(filename) as file:
             data = json.load(file)
             return data["urls"]
 
-    def open_facebook_video_links(self, urls):
+    def open_facebook_post_links(self, urls):
         for url in urls:
             self.driver.get(url)
             try:
@@ -32,11 +34,11 @@ class FacebookScraperUC:
             except:
                 company = "Unknown"
             
-            self.close_facebook_popups()
-            time.sleep(1)
+            # self.close_facebook_popups()
+            # time.sleep(1)
             self.change_visibility_to_all()
             time.sleep(2)
-            self.expand_comments()
+            # self.expand_comments()
             self.get_comments(company)
             time.sleep(2)
 
@@ -57,9 +59,10 @@ class FacebookScraperUC:
             most_relevant.click()
             time.sleep(1)
             
-            show_all_comments = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@role='menuitem' and contains(text(),'Show all comments')]")))
+            show_all_comments = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(),'All comments')] | //div[@role='menuitem' and contains(text(),'Show all comments including potential spam')]")))
             self.driver.execute_script("arguments[0].scrollIntoView(false);", show_all_comments)
             show_all_comments.click()
+            print("Comment visibility changed to 'All Comments'")
         except Exception as e:
             print(f"Unable to change comment visibility: {e}")
 
@@ -112,7 +115,7 @@ class FacebookScraperUC:
             comments.extend(new_comments)
             time.sleep(0.5)
 
-        with open('comments_videos.json', 'w') as file:
+        with open('comments_posts.json', 'w') as file:
             json.dump({"comments": comments}, file, indent=4)
 
     def quit(self):
