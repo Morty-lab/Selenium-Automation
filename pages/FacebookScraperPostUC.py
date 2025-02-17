@@ -9,8 +9,8 @@ from datetime import date
 
 
 class FacebookScrapePostUC:
-    def __init__(self):
-        self.driver = uc.Chrome(headless=True)  # Set to True if you want it headless
+    def __init__(self, Head = True):
+        self.driver = uc.Chrome(headless= Head)  # Set to True if you want it headless
         self.wait = WebDriverWait(self.driver, 10)
 
     def test_facebook_scraper(self):
@@ -38,7 +38,7 @@ class FacebookScrapePostUC:
             # time.sleep(1)
             self.change_visibility_to_all()
             time.sleep(2)
-            # self.expand_comments()
+            self.expand_comments()
             self.get_comments(company)
             time.sleep(2)
 
@@ -67,19 +67,21 @@ class FacebookScrapePostUC:
             print(f"Unable to change comment visibility: {e}")
 
     def expand_comments(self):
-        while True:
-            try:
-                view_more = self.driver.find_element(By.XPATH, "//span[contains(text(),'View more')]")
-                self.driver.execute_script("arguments[0].scrollIntoView(false);", view_more)
-                view_more.click()
-                time.sleep(1)
-            except:
-                print("No more 'View more' buttons are visible.")
-                break
+        reply_divs = self.driver.find_elements(By.CSS_SELECTOR, "div.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x78zum5.x1iyjqo2.x21xpn4.x1n2onr6")
+        if not reply_divs:
+            print("No more replies visible.")
+        else:
+            for reply_div in reply_divs:
+                try:
+                    self.driver.execute_script("arguments[0].scrollIntoView(false);", reply_div)
+                    reply_div.click()
+                    time.sleep(1)
+                except Exception as e:
+                    print(f"Failed to click 'View more': {e}")
 
     def get_comments(self, company):
         comments = []
-        pattern = re.compile(r"(\d+(d|w))")
+        pattern = re.compile(r"(\d+(h|d|w))")
 
         while True:
             comments_div = self.driver.find_elements(By.CSS_SELECTOR, "div.x1n2onr6.x1ye3gou.x1iorvi4.x78zum5.x1q0g3np.x1a2a7pz")
@@ -109,6 +111,34 @@ class FacebookScrapePostUC:
                 }
                 new_comments.append(new_comment)
 
+                # Get replies
+                try:
+                    replies_div = comment_div.find_element(By.CSS_SELECTOR, "div.x1n2onr6.x1e558r4.x1iorvi4.x78zum5.x1q0g3np.x1a2a7pz")
+                    replies_content = replies_div.get_attribute("innerHTML")
+                    print(f"Replies content: {replies_content}")
+                except:
+                    print("Failed to get replies")
+                
+                # for reply_div in replies_div:
+                #     reply_text = reply_div.text.split("\n")
+                #     reply_name = reply_text[0]
+                #     reply_comment = "\n".join(reply_text[1:])
+
+                #     try:
+                #         reply_url = reply_div.find_element(By.TAG_NAME, "a").get_attribute("href")
+                #     except:
+                #         reply_url = ""
+
+                #     new_reply = {
+                #         "date": today_date,
+                #         "name": reply_name,
+                #         "company": company,
+                #         "comment": reply_comment,
+                #         "how_long": "",  # Assuming no 'how_long' for replies
+                #         "url": reply_url
+                #     }
+                #     new_comments.append(new_reply)
+
             if not new_comments or all(comment in comments for comment in new_comments):
                 break
 
@@ -117,6 +147,8 @@ class FacebookScrapePostUC:
 
         with open('comments_posts.json', 'w') as file:
             json.dump({"comments": comments}, file, indent=4)
+            
+        print(f"Logged {len(comments)} comments.")
 
     def quit(self):
         self.driver.quit()

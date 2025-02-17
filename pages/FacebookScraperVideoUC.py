@@ -9,15 +9,17 @@ from datetime import date
 
 
 class FacebookScraperVideoUC:
-    def __init__(self):
-        self.driver = uc.Chrome(headless=True)  # Set to True if you want it headless
+    def __init__(self,Head = True):
+        self.driver = uc.Chrome(headless= Head)  # Set to True if you want it headless
         self.wait = WebDriverWait(self.driver, 10)
 
     def test_facebook_scraper(self):
-        self.driver.maximize_window()
-        video_urls = self.get_urls_from_json("video.json")
-
-        self.open_facebook_video_links(video_urls)
+        try:
+            self.driver.maximize_window()
+            video_urls = self.get_urls_from_json("video.json")
+            self.open_facebook_video_links(video_urls)
+        finally:
+            self.quit()
 
     def get_urls_from_json(self, filename):
         with open(filename) as file:
@@ -57,7 +59,7 @@ class FacebookScraperVideoUC:
             most_relevant.click()
             time.sleep(1)
             
-            show_all_comments = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@role='menuitem' and contains(text(),'Show all comments')]")))
+            show_all_comments = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(),'All comments')] | //div[@role='menuitem' and contains(text(),'Show all comments including potential spam')]")))
             self.driver.execute_script("arguments[0].scrollIntoView(false);", show_all_comments)
             show_all_comments.click()
         except Exception as e:
@@ -114,6 +116,8 @@ class FacebookScraperVideoUC:
 
         with open('comments_videos.json', 'w') as file:
             json.dump({"comments": comments}, file, indent=4)
+
+        print(f"Logged {len(comments)} comments.")
 
     def quit(self):
         self.driver.quit()
