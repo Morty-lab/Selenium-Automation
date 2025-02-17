@@ -10,7 +10,7 @@ from datetime import date
 
 class FacebookScraperVideoUC:
     def __init__(self):
-        self.driver = uc.Chrome(headless=False)  # Set to True if you want it headless
+        self.driver = uc.Chrome(headless=True)  # Set to True if you want it headless
         self.wait = WebDriverWait(self.driver, 10)
 
     def test_facebook_scraper(self):
