@@ -70,22 +70,25 @@ class FacebookScraper(BaseCase):
 
     def get_comments(self, company):
         comments = []
-        pattern = re.compile(r"(\d+(d|w))")
+        pattern = re.compile(r"(\d+(h|d|w))")
+        
         while True:
             comments_div = self.find_elements("div.x1n2onr6.x1ye3gou.x1iorvi4.x78zum5.x1q0g3np.x1a2a7pz")
             new_comments = []
+            
             for comment_div in comments_div:
                 comment_text = comment_div.get_attribute("innerText")
                 name, *comment_parts = comment_text.split("\n")
                 today_date = date.today().strftime("%Y-%m-%d")
                 match = pattern.search(comment_parts[-1])
+                
                 if match:
                     how_long = match.group(0)
                     comment = "\n".join(comment_parts[:-1])  # Everything except the 'how_long' part
                 else:
                     how_long = ""
                     comment = "\n".join(comment_parts)  # All parts are part of the comment if no 'how_long'
-                url = ""
+                
                 a_tags = comment_div.find_elements("tag name", "a")
                 url = a_tags[0].get_attribute("href") if a_tags else ""
 
@@ -97,14 +100,15 @@ class FacebookScraper(BaseCase):
                     "how_long": how_long,
                     "url": url
                 }
-                new_comments.append(json.dumps(new_comment))
+                new_comments.append(new_comment)
 
-            if not new_comments or set(new_comments).issubset(set(comments)):
+            if not new_comments or all(comment in comments for comment in new_comments):
                 break
+            
             comments.extend(new_comments)
             self.sleep(0.5)
-
+        
         with open('comments_videos.json', 'w') as file:
-            for comment in comments:
-                file.write(comment + "\n")
+            json.dump({"comments": comments}, file, indent=4)
+
 
